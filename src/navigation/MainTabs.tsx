@@ -18,7 +18,9 @@ export type MainTabsParamList = {
 const Tab = createBottomTabNavigator<MainTabsParamList>();
 
 export const MainTabs: React.FC = () => {
-  const totalQty = useCartStore((state) => state.totalQuantity());
+  const totalQty = useCartStore((state) =>
+    state.items.reduce((sum, i) => sum + i.quantity, 0),
+  );
 
   const shopScreen = (
     <Tab.Screen
