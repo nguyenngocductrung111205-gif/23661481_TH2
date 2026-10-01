@@ -78,12 +78,21 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.ktxgo_23661481"
+    buildFeatures {
+        buildConfig = true
+    }
     defaultConfig {
         applicationId "com.ktxgo_23661481"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++20 -frtti -fexceptions"
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
     }
     signingConfigs {
         debug {

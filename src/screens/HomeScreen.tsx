@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, ListRenderItemInfo } from '@shopify/flash-list';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -108,7 +108,6 @@ export const HomeScreen: React.FC = () => {
                 onPress={() => handleProductPress(item.id)}
               />
             )}
-            estimatedItemSize={220}
             numColumns={2}
             keyExtractor={(item) => `${STUDENT.mssv}-${item.id}`}
             contentContainerStyle={styles.flashListContent}
