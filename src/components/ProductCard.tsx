@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -41,11 +40,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item, onPress }) => {
       onPress={onPress}
     >
       <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: item.image }}
-          style={styles.image}
-          resizeMode="contain"
-        />
+        <Text style={styles.emoji}>{item.emoji}</Text>
       </View>
       <View style={styles.infoContainer}>
         <Text style={styles.title} numberOfLines={2}>
@@ -87,13 +82,12 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#DBEAFE',
     borderRadius: 8,
     marginBottom: 8,
   },
-  image: {
-    width: '90%',
-    height: '90%',
+  emoji: {
+    fontSize: 56,
   },
   infoContainer: {
     flex: 1,

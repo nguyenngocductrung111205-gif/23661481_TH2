@@ -36,7 +36,7 @@ export const DetailScreen: React.FC = () => {
     isError,
   } = useQuery<Product>({
     queryKey: ['product', id],
-    queryFn: () => getProductById(id),
+    queryFn: () => getProductById(Number(id)),
   });
 
   const handleAddToCart = () => {
@@ -78,7 +78,7 @@ export const DetailScreen: React.FC = () => {
   }
 
   const formattedPrice =
-    Math.round(product.price * PRICE_MULTIPLIER).toLocaleString('vi-VN') + ' đ';
+    product.price.toLocaleString('vi-VN') + ' đ';
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
