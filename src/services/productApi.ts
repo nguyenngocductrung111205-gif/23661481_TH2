@@ -136,6 +136,7 @@ const toKtxProduct = (p: ApiProduct): Product => {
     title: m?.title ?? p.title,
     category: m?.category ?? p.category,
     emoji: m?.emoji ?? '🛍️',
+    price: m?.price ?? p.price,
   };
 };
 
