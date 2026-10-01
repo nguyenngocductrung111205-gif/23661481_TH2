@@ -7,16 +7,16 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  Vibration,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 
-import { STUDENT, PRICE_MULTIPLIER, VARIANT } from '@constants/student';
+import { STUDENT, PRICE_MULTIPLIER } from '@constants/student';
 import { THEME } from '@constants/theme';
 import { getProductById, Product } from '@services/productApi';
+import { triggerAddHaptic } from '@services/haptic';
 import { useCartStore } from '@stores/cartStore';
 import Watermark from '@components/Watermark';
 import { ShopStackParamList } from '@navigation/ShopStack';
@@ -42,12 +42,7 @@ export const DetailScreen: React.FC = () => {
   const handleAddToCart = () => {
     if (!product) return;
 
-    // Trigger haptic theo VARIANT
-    if (VARIANT.hapticOnAdd === 'impact') {
-      Vibration.vibrate(50);
-    } else {
-      Vibration.vibrate(25); // selection haptic
-    }
+    triggerAddHaptic();
 
     addItem({
       id: product.id,
