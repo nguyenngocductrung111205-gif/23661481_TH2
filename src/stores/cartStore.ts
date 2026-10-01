@@ -13,10 +13,13 @@ export interface CartItem {
 
 interface CartState {
   items: CartItem[];
+  distanceKm: number | null; // không persist
+  shipFee: number | null;    // không persist
   addItem: (product: { id: number; title: string; price: number; image: string }) => void;
   removeItem: (id: number) => void;
   changeQty: (id: number, delta: number) => void;
   clearCart: () => void;
+  setShipping: (distanceKm: number | null, shipFee: number | null) => void;
   totalQuantity: () => number;
   totalAmount: () => number;
 }
@@ -25,53 +28,49 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      addItem: (product) => {
-        const { items } = get();
-        const existingIndex = items.findIndex((item) => item.id === product.id);
+      distanceKm: null,
+      shipFee: null,
 
-        if (existingIndex > -1) {
-          const updated = [...items];
-          updated[existingIndex].quantity += 1;
-          set({ items: updated });
-        } else {
-          set({
-            items: [...items, { ...product, quantity: 1 }],
-          });
-        }
-      },
-      removeItem: (id) => {
-        set({ items: get().items.filter((item) => item.id !== id) });
-      },
-      changeQty: (id, delta) => {
-        const { items } = get();
-        const updated = items
-          .map((item) => {
-            if (item.id === id) {
-              const newQty = item.quantity + delta;
-              return newQty > 0 ? { ...item, quantity: newQty } : null;
-            }
-            return item;
-          })
-          .filter(Boolean) as CartItem[];
+      addItem: (product) =>
+        set((state) => {
+          const exists = state.items.some((i) => i.id === product.id);
+          return {
+            items: exists
+              ? state.items.map((i) =>
+                i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i,
+              )
+              : [...state.items, { ...product, quantity: 1 }],
+          };
+        }),
 
-        set({ items: updated });
-      },
+      removeItem: (id) =>
+        set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
+
+      changeQty: (id, delta) =>
+        set((state) => ({
+          items: state.items
+            .map((i) => (i.id === id ? { ...i, quantity: i.quantity + delta } : i))
+            .filter((i) => i.quantity > 0),
+        })),
+
       clearCart: () => set({ items: [] }),
-      totalQuantity: () => {
-        return get().items.reduce((sum, item) => sum + item.quantity, 0);
-      },
-      totalAmount: () => {
-        return get().items.reduce(
-          (sum, item) => sum + Math.round(item.price * PRICE_MULTIPLIER) * item.quantity,
-          0
-        );
-      },
+
+      setShipping: (distanceKm, shipFee) => set({ distanceKm, shipFee }),
+
+      totalQuantity: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
+
+      totalAmount: () =>
+        get().items.reduce(
+          (sum, i) => sum + Math.round(i.price * PRICE_MULTIPLIER) * i.quantity,
+          0,
+        ),
     }),
     {
       name: `ktxgo-cart-${STUDENT.mssv}`,
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+      partialize: (state) => ({ items: state.items }), // chỉ lưu giỏ
+    },
+  ),
 );
 
 export default useCartStore;
