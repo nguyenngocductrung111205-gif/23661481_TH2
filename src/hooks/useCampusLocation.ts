@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert, Linking, PermissionsAndroid, Platform } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import { BASE_SHIP_FEE, VARIANT } from '@constants/student';
+import { useCartStore } from '@stores/cartStore';
 
 // Tọa độ Cổng KTX IUH (Số 12 Nguyễn Văn Bảo, Gò Vấp, TP.HCM)
 export const KTX_GATE_COORDS = {
@@ -22,7 +23,7 @@ export function haversineDistanceKm(
   lat2: number,
   lon2: number
 ): number {
-  const R = 6371; // Earth radius in km
+  const R = 6371; // bán kính Trái Đất (km)
   const toRad = (deg: number) => (deg * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
@@ -36,10 +37,9 @@ export function haversineDistanceKm(
 export function calculateShippingFee(distanceKm: number): number {
   if (VARIANT.shipFormula === 'A') {
     return BASE_SHIP_FEE + Math.round(distanceKm * 2000);
-  } else {
-    // Formula B
-    return BASE_SHIP_FEE + Math.round(distanceKm * 1500) + 2000;
   }
+  // Công thức B
+  return BASE_SHIP_FEE + Math.round(distanceKm * 1500) + 2000;
 }
 
 export const useCampusLocation = () => {
@@ -97,6 +97,21 @@ export const useCampusLocation = () => {
     }
   }, []);
 
+  // Tính khoảng cách + phí, rồi ghi vào store để màn Giỏ đọc được
+  const applyCoords = useCallback((lat: number, lon: number) => {
+    setCoords({ latitude: lat, longitude: lon });
+    const dist = haversineDistanceKm(
+      lat,
+      lon,
+      KTX_GATE_COORDS.latitude,
+      KTX_GATE_COORDS.longitude
+    );
+    const fee = calculateShippingFee(dist);
+    setDistanceKm(dist);
+    setShipFee(fee);
+    useCartStore.getState().setShipping(dist, fee);
+  }, []);
+
   const getCurrentLocation = useCallback(async () => {
     setLoading(true);
     setErrorMsg(null);
@@ -110,41 +125,17 @@ export const useCampusLocation = () => {
 
     Geolocation.getCurrentPosition(
       (position) => {
-        const userLat = position.coords.latitude;
-        const userLon = position.coords.longitude;
-        setCoords({ latitude: userLat, longitude: userLon });
-
-        const dist = haversineDistanceKm(
-          userLat,
-          userLon,
-          KTX_GATE_COORDS.latitude,
-          KTX_GATE_COORDS.longitude
-        );
-        setDistanceKm(dist);
-
-        const fee = calculateShippingFee(dist);
-        setShipFee(fee);
-
+        applyCoords(position.coords.latitude, position.coords.longitude);
         setLoading(false);
       },
-      (error) => {
-        // Fallback for emulator if GPS has no signal
-        const fallbackLat = 10.8245;
-        const fallbackLon = 106.6890;
-        setCoords({ latitude: fallbackLat, longitude: fallbackLon });
-        const dist = haversineDistanceKm(
-          fallbackLat,
-          fallbackLon,
-          KTX_GATE_COORDS.latitude,
-          KTX_GATE_COORDS.longitude
-        );
-        setDistanceKm(dist);
-        setShipFee(calculateShippingFee(dist));
+      () => {
+        // Dự phòng cho máy ảo chưa có tín hiệu GPS
+        applyCoords(10.8245, 106.689);
         setLoading(false);
       },
       { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
     );
-  }, [requestPermission]);
+  }, [requestPermission, applyCoords]);
 
   useEffect(() => {
     getCurrentLocation();
