@@ -12,12 +12,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { STUDENT, ROOM_LABEL, PRICE_MULTIPLIER } from '@constants/student';
 import { THEME } from '@constants/theme';
 import { useCartStore, CartItem } from '@stores/cartStore';
-import useCampusLocation from '@hooks/useCampusLocation';
 import Watermark from '@components/Watermark';
 
 export const CartScreen: React.FC = () => {
-  const { items, changeQty, removeItem, totalAmount, clearCart } = useCartStore();
-  const { distanceKm, shipFee } = useCampusLocation();
+  const {
+    items,
+    changeQty,
+    removeItem,
+    totalAmount,
+    clearCart,
+    distanceKm,
+    shipFee,
+  } = useCartStore();
 
   const subtotal = totalAmount();
   const effectiveShipFee = shipFee ?? 0;
@@ -25,7 +31,6 @@ export const CartScreen: React.FC = () => {
 
   const renderItem = ({ item }: { item: CartItem }) => {
     const itemUnitPrice = Math.round(item.price * PRICE_MULTIPLIER);
-    const itemSubtotal = itemUnitPrice * item.quantity;
 
     return (
       <View style={styles.itemCard}>
@@ -122,7 +127,7 @@ export const CartScreen: React.FC = () => {
             <Text style={styles.shippingValue}>
               {effectiveShipFee > 0
                 ? `${effectiveShipFee.toLocaleString('vi-VN')} đ`
-                : 'Đang tính...'}
+                : 'Mở tab Tôi để định vị'}
             </Text>
           </View>
 
@@ -138,7 +143,7 @@ export const CartScreen: React.FC = () => {
           <TouchableOpacity
             style={styles.checkoutBtn}
             activeOpacity={0.8}
-            onPress={() => {}}
+            onPress={() => { }}
           >
             <Text style={styles.checkoutBtnText}>
               Đặt giao tận phòng ({ROOM_LABEL})
