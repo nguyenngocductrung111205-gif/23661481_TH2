@@ -5,11 +5,11 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Vibration,
 } from 'react-native';
-import { STUDENT, PRICE_MULTIPLIER, VARIANT } from '@constants/student';
+import { PRICE_MULTIPLIER } from '@constants/student';
 import { THEME } from '@constants/theme';
 import { Product } from '@services/productApi';
+import { triggerAddHaptic } from '@services/haptic';
 import { useCartStore } from '@stores/cartStore';
 
 interface ProductCardProps {
@@ -24,12 +24,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item, onPress }) => {
     Math.round(item.price * PRICE_MULTIPLIER).toLocaleString('vi-VN') + ' đ';
 
   const handleAddPress = () => {
-    // Trigger haptic according to VARIANT
-    if (VARIANT.hapticOnAdd === 'impact') {
-      Vibration.vibrate(50);
-    } else {
-      Vibration.vibrate(25); // selection haptic
-    }
+    triggerAddHaptic();
 
     addItem({
       id: item.id,
